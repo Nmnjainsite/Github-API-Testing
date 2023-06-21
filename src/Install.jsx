@@ -1,70 +1,65 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { Octokit } from "@octokit/core";
 
 const Install = () => {
-  const [installations, setInstallations] = useState([]);
-  const [installId, setInstallId] = useState(null);
+  const [installId, setInstallId] = useState("");
   const profileData = localStorage.getItem("githubData");
   const profile = profileData ? JSON.parse(profileData) : null;
   const navigate = useNavigate();
+  const [jwtToken, setJwtToken] = useState("");
 
   const generateInstallationUrl = () => {
     // Replace "<your-app-name>" with your actual GitHub App name
     return `https://github.com/apps/Install-App-Testing`;
   };
 
-  // Step 3: Direct the User to Install Your App
-  const handleInstallClick = () => {
+  const handleInstallClick = async () => {
     const installationUrl = generateInstallationUrl();
-    const popupWindow = window.open(
-      installationUrl,
-      "_blank",
-      "width=600,height=600"
-    );
-
-    // Delay the closing of the popup window
-    setTimeout(() => {
-      if (popupWindow && !popupWindow.closed) {
-        popupWindow.close();
-      }
-    }, 10000); // Adjust the delay (in milliseconds) as needed
+    window.location.href = installationUrl;
   };
 
   useEffect(() => {
-    const fetchInstallations = async () => {
+    const fetchToken = async () => {
       try {
-        const response = await axios.get(
-          "https://api.github.com/user/installations",
-          {
-            headers: {
-              Authorization: `Bearer ${profile?.access_token}`,
-              Accept: "application/vnd.github.v3+json",
-              "X-GitHub-Api-Version": "2022-11-28",
-            },
-          }
-        );
-
-        const fetchedInstallations = response.data.installations;
-        setInstallations(fetchedInstallations);
-
-        const matchedInstallation = fetchedInstallations.find(
-          (installation) => installation.account.login === profile?.login
-        );
-
-        if (matchedInstallation) {
-          setInstallId(matchedInstallation.id);
-        } else {
-          setInstallId(null);
-          console.log("Installation not found for the current user.");
-        }
+        const response = await axios.get("http://localhost:8080/generate-jwt");
+        setJwtToken(response.data);
       } catch (error) {
-        console.error("Error fetching installations:", error);
+        console.error("Error fetching token:", error);
       }
     };
 
-    fetchInstallations();
-  }, [profile?.access_token, profile?.login]);
+    fetchToken();
+  }, []);
+
+  const fetchInstallation = useCallback(
+    async (username) => {
+      try {
+        const octokit = new Octokit({
+          auth: `${jwtToken.token}`,
+        });
+
+        const response = await octokit.request(
+          `GET /users/${username}/installation`
+        );
+        const newInstallId = response.data.id;
+        setInstallId(newInstallId); // Update the state immediately
+        window.close();
+      } catch (error) {
+        console.error("Error fetching installation:", error);
+      }
+    },
+    [jwtToken]
+  );
+
+  console.log(installId, "installId");
+
+  useEffect(() => {
+    if (jwtToken && profile) {
+      fetchInstallation(profile?.login);
+    }
+  }, [jwtToken, profile]);
 
   const onLogout = useCallback(() => {
     localStorage.clear();
@@ -79,16 +74,8 @@ const Install = () => {
       >
         Sign Out
       </button>
-      <div>
-        <h1>Installations</h1>
-        <ul>
-          {installations.map((installation) => (
-            <li key={installation.id}>{installation.name}</li>
-          ))}
-        </ul>
-        <p>Current Install ID: {installId}</p>
-      </div>
-      {!installId && (
+
+      {!installId ? (
         <button
           onClick={handleInstallClick}
           className="flex items-center mt-3 mb-3"
@@ -106,6 +93,11 @@ const Install = () => {
           </svg>
           Install My App
         </button>
+      ) : (
+        <div>
+          <h1>Installations</h1>
+          <p>Current Install ID: {installId}</p>
+        </div>
       )}
     </div>
   );

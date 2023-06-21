@@ -2,7 +2,7 @@ import "./App.css";
 import { useCallback, useEffect } from "react";
 import { LoginSocialGithub } from "reactjs-social-login";
 import { useNavigate } from "react-router-dom";
-import Install from "./Install";
+
 function Home() {
   const REDIRECT_URI = "http://localhost:3001";
 
