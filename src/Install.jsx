@@ -9,6 +9,7 @@ const Install = () => {
   const profile = profileData ? JSON.parse(profileData) : null;
   const navigate = useNavigate();
   const [jwtToken, setJwtToken] = useState("");
+  const [installToken, setInstallToken] = useState([]);
 
   const generateInstallationUrl = () => {
     // Replace "<your-app-name>" with your actual GitHub App name
@@ -60,6 +61,109 @@ const Install = () => {
       fetchInstallation(profile?.login);
     }
   }, [jwtToken, profile]);
+
+  useEffect(() => {
+    const octokit = new Octokit({
+      auth: `Bearer ${jwtToken.token}`,
+    });
+
+    const fetchAccessToken = async () => {
+      try {
+        const response = await octokit.request(
+          "POST /app/installations/{installation_id}/access_tokens",
+          {
+            installation_id: installId,
+          }
+        );
+        const accessToken = response.data.token;
+        setInstallToken(accessToken);
+      } catch (error) {
+        console.error("Error obtaining access token:", error);
+      }
+    };
+
+    fetchAccessToken();
+  }, [jwtToken, installId]);
+
+  console.log("install access token", installToken);
+  console.log("User access token", profile?.access_token);
+
+  async function fetchData() {
+    const octokit = new Octokit({
+      auth: `Bearer ${installToken}`,
+    });
+
+    try {
+      console.log(installToken, "FROM REPOS");
+      const response = await octokit.request(
+        "GET /user/installations/{installation_id}/repositories",
+        {
+          installation_id: 38906311,
+          per_page: 100,
+          page: 1,
+          visibility: "all",
+          headers: {
+            Accept: "application/vnd.github.v3+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+          },
+        }
+      );
+
+      console.log(response.data);
+      // Do something with the response data
+    } catch (error) {
+      console.error(error);
+    }
+  }
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  // const fetchData = async () => {
+  //   const octokit = new Octokit({
+  //     auth: `Bearer ${jwtToken.token}`,
+  //   });
+
+  //   try {
+  //     const response = await octokit.request("GET /app", {
+  //       headers: {
+  //         "X-GitHub-Api-Version": "2022-11-28",
+  //       },
+  //     });
+
+  //     console.log(response.data);
+  //     // Do something with the response data
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
+
+  // fetchData();
+
+  useEffect(() => {
+    const fetchRepos = async () => {
+      const octokit = new Octokit({
+        auth: `Bearer ${installToken}`,
+      });
+
+      try {
+        const response = await octokit.request(
+          "GET /installation/repositories?per_page=100",
+          {
+            headers: {
+              "X-GitHub-Api-Version": "2022-11-28",
+            },
+          }
+        );
+
+        console.log(response); // Do something with the response data
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchRepos();
+  }, [installToken]);
 
   const onLogout = useCallback(() => {
     localStorage.clear();

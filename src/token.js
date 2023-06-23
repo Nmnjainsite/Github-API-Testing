@@ -16,8 +16,8 @@ function generateJWT() {
   const payload = {
     // Issued at time
     iat: Math.floor(Date.now() / 1000),
-    // JWT expiration time (5 minutes maximum)
-    exp: Math.floor(Date.now() / 1000) + 300, // Set to 5 minutes (300 seconds)
+    // JWT expiration time (10 minutes maximum)
+    exp: Math.floor(Date.now() / 1000) + 600, // Set to 10 minutes (600 seconds)
     // GitHub App's identifier
     iss: app_id,
   };
