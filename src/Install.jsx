@@ -139,19 +139,19 @@ const Install = () => {
 
   console.log(repos);
 
-  const onLogout = useCallback(() => {
-    localStorage.clear();
-    navigate("/");
-  }, []);
+  // const onLogout = useCallback(() => {
+  //   localStorage.clear();
+  //   navigate("/");
+  // }, []);
 
   return (
     <div>
-      <button
+      {/* <button
         onClick={onLogout}
         className="font-medium text-sm text-indigo-500 hover:text-indigo-600 flex items-center py-1 px-3"
       >
         Sign Out
-      </button>
+      </button> */}
 
       {!installId ? (
         <button
