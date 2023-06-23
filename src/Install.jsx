@@ -122,7 +122,7 @@ const Install = () => {
       const response = await octokit.request(
         "GET /user/installations/{installation_id}/repositories",
         {
-          installation_id: 38906311,
+          installation_id: installId,
           per_page: 100,
           page: 1,
           visibility: "all",
@@ -210,7 +210,7 @@ const Install = () => {
             {repos.length !== 0 ? (
               <ol>
                 {repos.map((repo) => (
-                  <li>{repo.name}</li>
+                  <li key={repo.id}>{repo.name}</li>
                 ))}
               </ol>
             ) : (
