@@ -5,8 +5,6 @@ import { Octokit } from "@octokit/core";
 
 const Install = () => {
   const [installId, setInstallId] = useState("");
-  const profileData = localStorage.getItem("githubData");
-  const profile = profileData ? JSON.parse(profileData) : null;
   const navigate = useNavigate();
   const [jwtToken, setJwtToken] = useState("");
   const [installToken, setInstallToken] = useState([]);
@@ -23,6 +21,7 @@ const Install = () => {
     window.location.href = installationUrl;
   };
 
+  // fetch jwt
   useEffect(() => {
     const fetchToken = async () => {
       try {
@@ -36,6 +35,7 @@ const Install = () => {
     fetchToken();
   }, []);
 
+  // fetch username
   const fetchUserName = async () => {
     const octokit = new Octokit({
       auth: `Bearer ${jwtToken.token}`,
@@ -58,6 +58,7 @@ const Install = () => {
     fetchUserName();
   }, [jwtToken]);
 
+  // fetch installId
   const fetchInstallation = useCallback(
     async (username) => {
       try {
@@ -86,6 +87,7 @@ const Install = () => {
     }
   }, [jwtToken, username]);
 
+  // fetch install_access_token
   useEffect(() => {
     const octokit = new Octokit({
       auth: `Bearer ${jwtToken.token}`,
@@ -109,40 +111,7 @@ const Install = () => {
     fetchAccessToken();
   }, [jwtToken, installId]);
 
-  console.log("install access token", installToken);
-  console.log("User access token", profile?.access_token);
-
-  async function fetchData() {
-    const octokit = new Octokit({
-      auth: `Bearer ${installToken}`,
-    });
-
-    try {
-      console.log(installToken, "FROM REPOS");
-      const response = await octokit.request(
-        "GET /user/installations/{installation_id}/repositories",
-        {
-          installation_id: installId,
-          per_page: 100,
-          page: 1,
-          visibility: "all",
-          headers: {
-            Accept: "application/vnd.github.v3+json",
-            "X-GitHub-Api-Version": "2022-11-28",
-          },
-        }
-      );
-
-      console.log(response.data);
-      // Do something with the response data
-    } catch (error) {
-      console.error(error);
-    }
-  }
-  useEffect(() => {
-    fetchData();
-  }, []);
-
+  // fetch repositories
   useEffect(() => {
     const fetchRepos = async () => {
       const octokit = new Octokit({
