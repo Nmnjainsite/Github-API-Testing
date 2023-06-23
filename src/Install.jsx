@@ -10,6 +10,8 @@ const Install = () => {
   const navigate = useNavigate();
   const [jwtToken, setJwtToken] = useState("");
   const [installToken, setInstallToken] = useState([]);
+  const [username, setUserName] = useState("");
+  const [repos, setRepos] = useState("");
 
   const generateInstallationUrl = () => {
     // Replace "<your-app-name>" with your actual GitHub App name
@@ -34,6 +36,28 @@ const Install = () => {
     fetchToken();
   }, []);
 
+  const fetchUserName = async () => {
+    const octokit = new Octokit({
+      auth: `Bearer ${jwtToken.token}`,
+    });
+
+    try {
+      const response = await octokit.request("GET /app", {
+        headers: {
+          "X-GitHub-Api-Version": "2022-11-28",
+        },
+      });
+      setUserName(response.data.owner.login);
+      // Do something with the response data
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserName();
+  }, [jwtToken]);
+
   const fetchInstallation = useCallback(
     async (username) => {
       try {
@@ -57,10 +81,10 @@ const Install = () => {
   console.log(installId, "installId");
 
   useEffect(() => {
-    if (jwtToken && profile) {
-      fetchInstallation(profile?.login);
+    if (jwtToken && username) {
+      fetchInstallation(username);
     }
-  }, [jwtToken, profile]);
+  }, [jwtToken, username]);
 
   useEffect(() => {
     const octokit = new Octokit({
@@ -119,27 +143,6 @@ const Install = () => {
     fetchData();
   }, []);
 
-  // const fetchData = async () => {
-  //   const octokit = new Octokit({
-  //     auth: `Bearer ${jwtToken.token}`,
-  //   });
-
-  //   try {
-  //     const response = await octokit.request("GET /app", {
-  //       headers: {
-  //         "X-GitHub-Api-Version": "2022-11-28",
-  //       },
-  //     });
-
-  //     console.log(response.data);
-  //     // Do something with the response data
-  //   } catch (error) {
-  //     console.error(error);
-  //   }
-  // };
-
-  // fetchData();
-
   useEffect(() => {
     const fetchRepos = async () => {
       const octokit = new Octokit({
@@ -156,7 +159,7 @@ const Install = () => {
           }
         );
 
-        console.log(response); // Do something with the response data
+        setRepos(response.data.repositories); // Do something with the response data
       } catch (error) {
         console.error(error);
       }
@@ -164,6 +167,8 @@ const Install = () => {
 
     fetchRepos();
   }, [installToken]);
+
+  console.log(repos);
 
   const onLogout = useCallback(() => {
     localStorage.clear();
@@ -201,6 +206,17 @@ const Install = () => {
         <div>
           <h1>Installations</h1>
           <p>Current Install ID: {installId}</p>
+          <div>
+            {repos.length !== 0 ? (
+              <ol>
+                {repos.map((repo) => (
+                  <li>{repo.name}</li>
+                ))}
+              </ol>
+            ) : (
+              <p>No repos</p>
+            )}
+          </div>
         </div>
       )}
     </div>
