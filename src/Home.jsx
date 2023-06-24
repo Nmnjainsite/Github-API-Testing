@@ -4,7 +4,7 @@ import { LoginSocialGithub } from "reactjs-social-login";
 import { useNavigate } from "react-router-dom";
 
 function Home() {
-  const REDIRECT_URI = "https://github-api-testing-one.vercel.app/";
+  const REDIRECT_URI = "http://localhost:3001";
 
   const navigate = useNavigate();
 
