@@ -10,6 +10,8 @@ const Install = () => {
   const [installToken, setInstallToken] = useState([]);
   const [username, setUserName] = useState("");
   const [repos, setRepos] = useState("");
+  const profileData = localStorage.getItem("githubData");
+  const profile = profileData ? JSON.parse(profileData) : null;
 
   const generateInstallationUrl = () => {
     // Replace "<your-app-name>" with your actual GitHub App name
@@ -36,27 +38,27 @@ const Install = () => {
   }, []);
 
   // fetch username
-  const fetchUserName = async () => {
-    const octokit = new Octokit({
-      auth: `Bearer ${jwtToken.token}`,
-    });
+  // const fetchUserName = async () => {
+  //   const octokit = new Octokit({
+  //     auth: `Bearer ${jwtToken.token}`,
+  //   });
 
-    try {
-      const response = await octokit.request("GET /app", {
-        headers: {
-          "X-GitHub-Api-Version": "2022-11-28",
-        },
-      });
-      setUserName(response.data.owner.login);
-      // Do something with the response data
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  //   try {
+  //     const response = await octokit.request("GET /app", {
+  //       headers: {
+  //         "X-GitHub-Api-Version": "2022-11-28",
+  //       },
+  //     });
+  //     setUserName(response.data.owner.login);
+  //     // Do something with the response data
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
 
-  useEffect(() => {
-    fetchUserName();
-  }, [jwtToken]);
+  // useEffect(() => {
+  //   fetchUserName();
+  // }, [jwtToken]);
 
   // fetch installId
   const fetchInstallation = useCallback(
@@ -82,10 +84,10 @@ const Install = () => {
   console.log(installId, "installId");
 
   useEffect(() => {
-    if (jwtToken && username) {
-      fetchInstallation(username);
+    if (jwtToken && profile?.login) {
+      fetchInstallation(profile?.login);
     }
-  }, [jwtToken, username]);
+  }, [jwtToken, profile?.login]);
 
   // fetch install_access_token
   useEffect(() => {
@@ -110,6 +112,8 @@ const Install = () => {
 
     fetchAccessToken();
   }, [jwtToken, installId]);
+
+  console.log(installToken, "installToken");
 
   // fetch repositories
   useEffect(() => {
@@ -139,19 +143,19 @@ const Install = () => {
 
   console.log(repos);
 
-  // const onLogout = useCallback(() => {
-  //   localStorage.clear();
-  //   navigate("/");
-  // }, []);
+  const onLogout = useCallback(() => {
+    localStorage.clear();
+    navigate("/");
+  }, []);
 
   return (
     <div>
-      {/* <button
+      <button
         onClick={onLogout}
         className="font-medium text-sm text-indigo-500 hover:text-indigo-600 flex items-center py-1 px-3"
       >
         Sign Out
-      </button> */}
+      </button>
 
       {!installId ? (
         <button

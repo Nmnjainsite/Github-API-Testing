@@ -7,8 +7,8 @@ import Install from "./Install";
 function App() {
   return (
     <Routes>
-      <Route path="/install" element={<Home />} />
-      <Route path="/" element={<Install />} />
+      <Route path="/" element={<Home />} />
+      <Route path="/install" element={<Install />} />
     </Routes>
   );
 }
