@@ -29,10 +29,6 @@ function Home() {
     alert("logout success");
   }, []);
 
-  //   const handleProviderChange = useCallback((event) => {
-  //     setProvider(event.target.value);
-  //   }, []);
-
   console.log(profile);
 
   return (
