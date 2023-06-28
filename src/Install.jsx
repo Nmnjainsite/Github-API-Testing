@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { Octokit } from "@octokit/rest";
+import { Octokit } from "@octokit/core";
 
 const Install = () => {
   const [installId, setInstallId] = useState("");
@@ -46,9 +46,8 @@ const Install = () => {
 
     fetchToken();
   }, []);
-
+  console.log(jwtToken);
   // fetch installId
-
   useEffect(() => {
     const fetchInstallationId = async (username) => {
       try {
